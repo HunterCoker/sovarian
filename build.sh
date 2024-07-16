@@ -6,15 +6,17 @@ fi
 
 cd build
 cmake ..
-if [ $? -ne 0]; then
+if [ $? -ne 0 ]; then
     echo "failed to configure cmake project"
     exit 1
 fi
 
 make
-if [ $? -ne 0]; then
+if [ $? -ne 0 ]; then
     echo "failed to build project"
     exit 1
 fi
+
+./sovarian
 
 exit 0
