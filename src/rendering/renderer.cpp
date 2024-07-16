@@ -18,6 +18,8 @@ struct renderer_data {
     //        ^ vao            ^ ?     ^ ebo
     /* glTF model data */
     tinygltf::Model head_model;
+    /* temp */
+    GLuint vao, vbo, ebo;
     /* uniform data */
     glm::mat4 model;
     glm::mat4 view;
@@ -27,7 +29,17 @@ struct renderer_data {
 
 static renderer_data _S_data;
 
-bool renderer::initialize() { 
+static float vertices[] = {
+    -0.5f, -0.5f, 0.0f,
+     0.5f, -0.5f, 0.0f,
+     0.0f,  0.5f, 0.0f
+};
+
+static unsigned int indices[] = {
+    0, 1, 2
+};
+
+bool renderer::initialize() {
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         glfwTerminate();
         return false;
@@ -35,22 +47,22 @@ bool renderer::initialize() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // create shader for rendering physically based materials    
+    // create shader for rendering physically based materials
     _S_data.pbr_shader
-        = std::make_unique<shader>("../../assets/shaders/pbr_shader.glsl");
+        = std::make_unique<shader>("../assets/shaders/pbr_shader.glsl");
 
     // load glTF model and prepare it for rendering
     auto& model = _S_data.head_model;
 
     tinygltf::TinyGLTF loader;
     std::string err, warn;
-    const std::string filename = "../../assets/models/adam_head/adamHead.gltf";
+    const std::string filename = "../assets/models/adam_head/adamHead.gltf";
     bool res = loader.LoadASCIIFromFile(&model, &err, &warn, filename);
     if (!warn.empty())  LOG_WARNING("%s", warn.c_str());
     if (!err.empty())   LOG_ERROR("%s", err.c_str());
     if (!res)           LOG_ERROR("failed to load gltf");
     else                LOG_INFO("successfully loaded gltf");
-    
+
     // auto bind_mesh = [&](std::map<size_t, GLuint>& vbos,
     //                     const tinygltf::Model& model,
     //                     const tinygltf::Mesh& mesh) -> void {
@@ -96,7 +108,7 @@ bool renderer::initialize() {
     //     std::map<size_t, GLuint> vbos;
     //     for (size_t i = 0; i < scene.nodes.size(); ++i)
     //         bind_model_nodes(vbos, model, model.nodes[scene.nodes[i]]);
-    
+
     //     glBindVertexArray(0);
 
     //     // cleanup vbos but do not delete index buffers yet
@@ -131,19 +143,19 @@ bool renderer::initialize() {
 }
 
 void renderer::render() const {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+
     _S_data.pbr_shader->bind();
     _S_data.model = glm::translate(glm::mat4(1.0f), glm::vec3(glfwGetTime())) *
                     glm::rotate(glm::mat4(1.0f),
                                 glm::radians(static_cast<float>(glfwGetTime())),
                                 glm::vec3(0.0f, 1.0f, 0.0f));
-    
+
     _S_data.pbr_shader->set_uniform_m4fv("u_Model", _S_data  .model);
     _S_data.pbr_shader->set_uniform_m4fv("u_View", _S_data.view);
     _S_data.pbr_shader->set_uniform_m4fv("u_Projection", _S_data.projection);
     _S_data.pbr_shader->set_uniform_3f("u_LightPosition", _S_data.light_pos);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
 
     // const auto& model = _S_data.model;
     // const auto& scene = model->scenes[model->defaultScene];
@@ -167,7 +179,7 @@ void renderer::render() const {
     // }
 
     // for (size_t i = 0; i < scene.nodes.size(); ++i) {
-        
+
     //     model.nodes[scene.nodes[i]]
     // }
 }

@@ -7,17 +7,23 @@
 #include <sstream>
 #include <string>
 
+/* TODO: ensure this shader cannot be used if something fails in constructor */
+
 shader::shader(const std::string_view shader_path) {
     std::ifstream shader_file;
 	std::stringstream vertex_shader_stream;
     std::stringstream fragment_shader_stream;
 
-    enum shader_type { VERTEX, FRAGMENT, NONE };
-    shader_type read_mode = shader_type::NONE;
+    {
+        enum shader_type { VERTEX, FRAGMENT, NONE };
+        shader_type read_mode = shader_type::NONE;
 
-	try {
-		shader_file.open(shader_path.data());
-        
+        shader_file.open(shader_path.data());
+        if (shader_file.fail()) {
+            LOG_ERROR("could not open file [%s]", shader_path.data());
+            return;
+        }
+
         std::string line;
         uint32_t line_number = 0;
         while (std::getline(shader_file, line)) {
@@ -29,12 +35,12 @@ shader::shader(const std::string_view shader_path) {
                 else {
                     read_mode = shader_type::NONE;
                     LOG_ERROR("invalid shader type in shader file:\n\tsee here [%s]:"
-                              "\n\t  |\n\t%d | %s\n\t  |  ^",
+                                "\n\t  |\n\t%d | %s\n\t  |  ^",
                         shader_path.data(), line_number, line.c_str());
                 }
                 continue;
             }
-            
+
             switch (read_mode) {
                 case shader_type::VERTEX: {
                     vertex_shader_stream << line << '\n';
@@ -49,11 +55,7 @@ shader::shader(const std::string_view shader_path) {
                 }
             }
         }
-	}
-	catch (std::ifstream::failure e) {
-        LOG_ERROR("failed to read shader file!\n\tsee here [%s]:",
-            shader_path.data());
-	}
+    }
 
 	std::string vertex_shader_str  = vertex_shader_stream.str();
 	const char* vertex_shader_code = vertex_shader_str.c_str();
@@ -72,14 +74,14 @@ shader::shader(const std::string_view shader_path) {
 	glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(vertex_shader, 512, NULL, info_log);
-		LOG_ERROR("vertex shader failed to compile!\n\tsee here [%s]: %s",
+		LOG_ERROR("vertex shader failed to compile!\n\tsee here [%s]:\n[\n%s]",
             shader_path.data(), info_log);
 	}
 
 	glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(vertex_shader, 512, NULL, info_log);
-		LOG_ERROR("fragment shader failed to compile!\n\tsee here [%s]: %s",
+		LOG_ERROR("fragment shader failed to compile!\n\tsee here [%s]:\n[\n%s]",
             shader_path.data(), info_log);
 	}
 
@@ -88,10 +90,10 @@ shader::shader(const std::string_view shader_path) {
 	glAttachShader(_M_program, fragment_shader);
 	glLinkProgram(_M_program);
 
-	glGetShaderiv(_M_program, GL_LINK_STATUS, &success);
+	glGetProgramiv(_M_program, GL_LINK_STATUS, &success);
 	if(!success) {
-		glGetShaderInfoLog(_M_program, 512, NULL, info_log);
-		LOG_ERROR("shader program failed to link!\n\tsee here [%s]: %s",
+		glGetProgramInfoLog(_M_program, 512, NULL, info_log);
+		LOG_ERROR("shader program failed to link!\n\tsee here [%s]:\n[\n%s]",
             shader_path.data(), info_log);
 	}
 

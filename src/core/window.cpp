@@ -1,5 +1,7 @@
 #include "core/window.hpp"
 
+#include "util/log.hpp"
+
 #include <cstdio>
 
 void error_callback(int code, const char* message) {
@@ -20,11 +22,14 @@ window::~window() {
 bool window::initialize() {
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
-        return false;
-    
+        return 1;
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
 
     _M_window = glfwCreateWindow(800, 600, "sovarian", nullptr, nullptr);
     if (!_M_window) {
@@ -42,5 +47,5 @@ bool window::initialize() {
 
 void window::present() const {
     glfwPollEvents();
-    glfwSwapBuffers(_M_window); 
+    glfwSwapBuffers(_M_window);
 }

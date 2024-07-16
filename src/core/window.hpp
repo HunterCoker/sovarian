@@ -7,6 +7,9 @@
 #include <cstddef>
 #include <cstdint>
 
+#include <iostream>
+
+
 #define g_window    window::get()
 
 typedef uint32_t    window_flags_t;
@@ -34,7 +37,7 @@ private:
     };
 private:
     window()
-        { _M_flags = WINDOWED | VSYNC; };
+        { _M_flags = WINDOWED | VSYNC; }
     static window* _S_instance;
 
     GLFWwindow* _M_window;
