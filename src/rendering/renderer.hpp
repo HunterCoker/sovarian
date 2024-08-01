@@ -18,7 +18,7 @@ public:
             _S_instance = new renderer;
         return _S_instance;
     }
-    
+
     bool initialize() override;
 
     void render() const;
@@ -41,6 +41,6 @@ public:
 private:
     renderer() = default;
     static renderer* _S_instance;
-    
+
     ::renderer::stats _M_stats;
 };

@@ -29,9 +29,9 @@ shader::shader(const std::string_view shader_path) {
         while (std::getline(shader_file, line)) {
             line_number++;
 
-            if (line.size() && line.front() == '!') {
-                if      (line == "!vertex")   read_mode = shader_type::VERTEX;
-                else if (line == "!fragment") read_mode = shader_type::FRAGMENT;
+            if (line.size() && line.front() == '/') {
+                if      (line == "// !vertex")   read_mode = shader_type::VERTEX;
+                else if (line == "// !fragment") read_mode = shader_type::FRAGMENT;
                 else {
                     read_mode = shader_type::NONE;
                     LOG_ERROR("invalid shader type in shader file:\n\tsee here [%s]:"

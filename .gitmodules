@@ -1,9 +1,9 @@
-[submodule "vendor/tinygltf"]
-	path = vendor/tinygltf
-	url = https://github.com/syoyo/tinygltf.git
 [submodule "vendor/glfw"]
 	path = vendor/glfw
 	url = https://github.com/glfw/glfw.git
 [submodule "vendor/glm"]
 	path = vendor/glm
 	url = git@github.com:g-truc/glm.git
+[submodule "vendor/assimp"]
+	path = vendor/assimp
+	url = git@github.com:assimp/assimp.git
